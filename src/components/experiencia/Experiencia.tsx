@@ -460,12 +460,18 @@ function CenaBloco({
   const [fotoIdx, setFotoIdx] = useState(0);
   const fotos = bloco.fotos;
 
-  // avanço automático das fotos + controle da música
+  // música começa na cena do vinil (logo após interação → navegador libera o áudio)
+  // e silencia ao chegar na mensagem de voz
+  useEffect(() => {
+    if (etapa === "musica") onMusicaInicio(bloco.musica_src);
+    if (etapa === "audio") onMusicaFim();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [etapa]);
+
+  // avanço automático das fotos
   useEffect(() => {
     if (etapa !== "fotos") return;
-    if (fotoIdx === 0) onMusicaInicio(bloco.musica_src);
     if (fotoIdx >= fotos.length) {
-      onMusicaFim();
       setEtapa("audio");
       return;
     }
@@ -514,12 +520,7 @@ function CenaBloco({
           linhas={[`${bloco.nome} pensou em você.`, "Escolheu cada foto,", "cada palavra, cada silêncio.", "", "Tudo isso é pra você."]}
           onDone={() => {
             setFotoIdx(0);
-            if (fotos.length > 0) {
-              setEtapa("fotos");
-            } else {
-              onMusicaInicio(bloco.musica_src);
-              setEtapa("audio");
-            }
+            setEtapa(fotos.length > 0 ? "fotos" : "audio");
           }}
         />
       </Centro>
