@@ -1,7 +1,29 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import type { ExperienciaView, BlocoView, FotoView } from "@/lib/types";
+import TelaCarregamento from "./TelaCarregamento";
+
+// ---- preloading ----
+function preloadUrls(urls: (string | null | undefined)[], onProgress: (p: number) => void) {
+  const validos = urls.filter(Boolean) as string[];
+  if (!validos.length) { onProgress(100); return; }
+  let done = 0;
+  const tick = () => { done++; onProgress(Math.round((done / validos.length) * 100)); };
+  validos.forEach((url) => {
+    if (/\.(jpe?g|png|webp|gif|avif)/i.test(url) || url.includes("fotos")) {
+      const img = new Image();
+      img.onload = img.onerror = tick;
+      img.src = url;
+    } else {
+      const audio = new Audio();
+      audio.oncanplaythrough = audio.onerror = tick;
+      audio.preload = "auto";
+      audio.src = url;
+    }
+  });
+}
 
 // ============================================================
 //  ARAÇÁ GRILL · "Nossa História" — A EXPERIÊNCIA
@@ -366,37 +388,74 @@ function PlayAudio({ playing, onToggle }: { playing: boolean; onToggle: () => vo
 function CenaEntrada({ onStart }: { onStart: () => void }) {
   return (
     <Centro>
-      <div style={{ animation: "softUp 1.4s ease forwards", opacity: 0, textAlign: "center" }}>
-        <p
+      <div style={{ textAlign: "center" }}>
+        {/* Brilho radial suave atrás do título */}
+        <div aria-hidden style={{
+          position: "absolute", inset: 0, pointerEvents: "none",
+          background: "radial-gradient(ellipse 70% 55% at 50% 50%, rgba(140,70,25,0.22) 0%, transparent 70%)",
+        }} />
+
+        <motion.p
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.4, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
           style={{
             fontFamily: "var(--font-cormorant),serif",
             fontStyle: "italic",
             color: "#9c8266",
-            letterSpacing: "0.3em",
+            letterSpacing: "0.32em",
             textTransform: "uppercase",
-            fontSize: 13,
+            fontSize: 12,
+            marginBottom: 24,
           }}
         >
           Araçá Grill apresenta
-        </p>
-        <h1
+        </motion.p>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 28, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 1.8, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
           style={{
             fontFamily: "var(--font-cormorant),serif",
-            fontSize: "clamp(40px,9vw,76px)",
+            fontSize: "clamp(52px,11vw,96px)",
             color: "#e9c69a",
-            margin: "18px 0 8px",
-            fontWeight: 500,
+            margin: "0 0 16px",
+            fontWeight: 400,
             fontStyle: "italic",
+            lineHeight: 1.1,
+            textShadow: "0 0 60px rgba(233,198,154,0.25)",
           }}
         >
           Nossa História
-        </h1>
-        <p style={{ color: "#cdb89e", fontFamily: "var(--font-cormorant),serif", fontSize: 20 }}>
-          Coloque o som no máximo. Respire fundo.
-        </p>
-        <Botao big onClick={onStart}>
-          Tocar para começar
-        </Botao>
+        </motion.h1>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2, delay: 1.6 }}
+          style={{ color: "#9c8266", fontFamily: "var(--font-cormorant),serif", fontSize: 18, letterSpacing: "0.05em", marginBottom: 4 }}
+        >
+          Coloque o som no máximo.
+        </motion.p>
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.2, delay: 2.0 }}
+          style={{ color: "#7a6448", fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", fontSize: 17, marginBottom: 0 }}
+        >
+          Respire fundo.
+        </motion.p>
+
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1.2, delay: 2.6, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <Botao big onClick={onStart}>
+            Tocar para começar
+          </Botao>
+        </motion.div>
       </div>
     </Centro>
   );
@@ -594,70 +653,108 @@ function CenaFinal({ data }: { data: ExperienciaView }) {
         flexDirection: "column",
         alignItems: "center",
         justifyContent: "center",
-        padding: "60px 20px",
+        padding: "80px 28px",
         position: "relative",
         zIndex: 2,
       }}
     >
+      {/* Mosaico de fotos animado */}
       {todas.length > 0 && (
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(110px,1fr))",
-            gap: 10,
-            maxWidth: 520,
+            gridTemplateColumns: `repeat(${Math.min(todas.length, 4)}, 1fr)`,
+            gap: 6,
+            maxWidth: 440,
             width: "100%",
-            marginBottom: 40,
+            marginBottom: 56,
           }}
         >
           {todas.map((f, i) => (
-            <div
+            <motion.div
               key={f.id}
+              initial={{ opacity: 0, scale: 0.88 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.1, delay: 0.15 + i * 0.18, ease: [0.22, 1, 0.36, 1] }}
               style={{
                 aspectRatio: "1",
-                borderRadius: 8,
-                background: f.src ? `url("${f.src}")` : gradFallback(i),
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                opacity: 0,
-                animation: `fillIn 1.1s ease ${0.2 + i * 0.22}s forwards`,
-                boxShadow: "inset 0 0 40px rgba(0,0,0,0.5)",
+                borderRadius: 6,
+                background: f.src ? `url("${f.src}") center/cover` : gradFallback(i),
+                boxShadow: "inset 0 0 30px rgba(0,0,0,0.5), 0 4px 20px rgba(0,0,0,0.4)",
+                overflow: "hidden",
+                position: "relative",
               }}
-            />
+            >
+              {/* vignette por foto */}
+              <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at center, transparent 40%, rgba(8,5,3,0.55) 100%)" }} />
+            </motion.div>
           ))}
         </div>
       )}
-      <div style={{ opacity: 0, animation: "softUp 1.6s ease 1.8s forwards", textAlign: "center" }}>
+
+      <motion.div
+        initial={{ opacity: 0, y: 22 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1.6, delay: todas.length * 0.15 + 0.6, ease: [0.22, 1, 0.36, 1] }}
+        style={{ textAlign: "center" }}
+      >
         <p
           style={{
             fontFamily: "var(--font-cormorant),serif",
             fontStyle: "italic",
-            fontSize: "clamp(24px,5vw,34px)",
+            fontSize: "clamp(22px,4.8vw,32px)",
             color: "#e9c69a",
-            lineHeight: 1.5,
+            lineHeight: 1.6,
+            marginBottom: 8,
           }}
         >
-          Vocês construíram isso juntos<br />sem saber.<br />
-          <span style={{ color: "#cdb89e" }}>Essa é a magia de amar alguém.</span>
-        </p>
-        <div style={{ width: 60, height: 1, background: "#7a5a3a", margin: "34px auto" }} />
-        <p style={{ fontFamily: "var(--font-cormorant),serif", fontSize: 19, color: "#cdb89e", lineHeight: 1.6 }}>
-          É uma honra ter vocês aqui esta noite.<br />
-          Que esse seja mais um momento<br />que vocês nunca esqueçam.
+          Algumas histórias não precisam ser perfeitas.
         </p>
         <p
           style={{
-            marginTop: 28,
-            letterSpacing: "0.35em",
+            fontFamily: "var(--font-cormorant),serif",
+            fontStyle: "italic",
+            fontSize: "clamp(22px,4.8vw,32px)",
+            color: "#f0e3d2",
+            lineHeight: 1.6,
+          }}
+        >
+          Elas só precisam ser <span style={{ color: "#e9c69a" }}>verdadeiras.</span>
+        </p>
+
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 1.2, delay: todas.length * 0.15 + 1.8 }}
+          style={{ width: 60, height: 1, background: "rgba(200,146,79,0.5)", margin: "36px auto", transformOrigin: "center" }}
+        />
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.4, delay: todas.length * 0.15 + 2.4 }}
+          style={{ fontFamily: "var(--font-cormorant),serif", fontSize: 17, color: "#9c8266", lineHeight: 1.7 }}
+        >
+          É uma honra ter vocês aqui esta noite.<br />
+          Que esse seja mais um momento<br />que vocês nunca esqueçam.
+        </motion.p>
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 1.4, delay: todas.length * 0.15 + 3.8 }}
+          style={{
+            marginTop: 36,
+            letterSpacing: "0.38em",
             textTransform: "uppercase",
-            fontSize: 14,
+            fontSize: 13,
             color: "#c8924f",
             fontFamily: "var(--font-cormorant),serif",
           }}
         >
           Araçá Grill
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
     </div>
   );
 }
@@ -667,11 +764,27 @@ function CenaFinal({ data }: { data: ExperienciaView }) {
 // ============================================================
 
 export default function Experiencia({ data }: { data: ExperienciaView }) {
+  const [pronto, setPronto] = useState(false);
+  const [progresso, setProgresso] = useState(0);
   const [cena, setCena] = useState<"entrada" | "abertura" | "b1" | "b2" | "final">("entrada");
   const musicaRef = useRef<HTMLAudioElement | null>(null);
   const vozRef = useRef<HTMLAudioElement | null>(null);
   const fadeTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const [vozTocando, setVozTocando] = useState(false);
+  const [mutado, setMutado] = useState(false);
+
+  // Pré-carregar todas as imagens e áudios antes de mostrar a experiência
+  useEffect(() => {
+    const urls = [
+      ...data.bloco_1.fotos.map((f) => f.src),
+      ...data.bloco_2.fotos.map((f) => f.src),
+      data.bloco_1.musica_src,
+      data.bloco_2.musica_src,
+      data.bloco_1.audio_src,
+      data.bloco_2.audio_src,
+    ];
+    preloadUrls(urls, setProgresso);
+  }, []);  // eslint-disable-line react-hooks/exhaustive-deps
 
   const limparFade = () => {
     if (fadeTimer.current) {
@@ -725,6 +838,14 @@ export default function Experiencia({ data }: { data: ExperienciaView }) {
     });
   }, [fade]);
 
+  const toggleMudo = useCallback(() => {
+    setMutado((m) => {
+      const novoMutado = !m;
+      if (musicaRef.current) musicaRef.current.muted = novoMutado;
+      return novoMutado;
+    });
+  }, []);
+
   // Destrava o áudio no gesto de entrada (iOS/Safari)
   // IMPORTANTE: o play() precisa ter um src válido para o iOS liberar o contexto de áudio.
   const desbloquearAudio = useCallback(() => {
@@ -772,64 +893,94 @@ export default function Experiencia({ data }: { data: ExperienciaView }) {
 
   useEffect(() => () => limparFade(), []);
 
+  const vars = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 1.1, ease: "easeInOut" as const } };
+
   return (
-    <div style={{ background: "#080503", minHeight: "100dvh", color: "#fff", position: "relative", overflow: "hidden" }}>
-      {/* textura grão sutil */}
-      <div
-        aria-hidden
-        style={{
-          position: "fixed",
-          inset: 0,
-          zIndex: 0,
-          opacity: 0.04,
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='80' height='80' filter='url(%23n)'/%3E%3C/svg%3E\")",
-          pointerEvents: "none",
-        }}
-      />
-      <Petalas />
+    <>
+      {/* Tela de carregamento — fica por cima até estar tudo pronto */}
+      {!pronto && <TelaCarregamento progresso={progresso} onPronto={() => setPronto(true)} />}
 
-      {/* elementos de áudio (controlados via refs) */}
-      <audio ref={musicaRef} preload="auto" loop playsInline />
-      <audio ref={vozRef} preload="auto" playsInline />
-
-      {cena === "entrada" && (
-        <CenaEntrada
-          onStart={() => {
-            desbloquearAudio();
-            setCena("abertura");
+      <div style={{ background: "#080503", minHeight: "100dvh", color: "#fff", position: "relative", overflow: "hidden" }}>
+        {/* Grão cinematográfico */}
+        <div
+          aria-hidden
+          style={{
+            position: "fixed", inset: 0, zIndex: 0, opacity: 0.04, pointerEvents: "none",
+            backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9'/%3E%3C/filter%3E%3Crect width='80' height='80' filter='url(%23n)'/%3E%3C/svg%3E\")",
           }}
         />
-      )}
-      {cena === "abertura" && (
-        <CenaAbertura nome1={data.nome_1} nome2={data.nome_2} onNext={() => setCena("b1")} />
-      )}
-      {cena === "b1" && (
-        <CenaBloco
-          bloco={data.bloco_1}
-          primeiro
-          onNext={() => setCena("b2")}
-          onMusicaInicio={tocarMusica}
-          onMusicaFim={pararMusica}
-          onVozToggle={alternarVoz}
-          vozTocando={vozTocando}
-        />
-      )}
-      {cena === "b2" && (
-        <CenaBloco
-          bloco={data.bloco_2}
-          primeiro={false}
-          onNext={() => {
-            pararMusica();
-            setCena("final");
-          }}
-          onMusicaInicio={tocarMusica}
-          onMusicaFim={pararMusica}
-          onVozToggle={alternarVoz}
-          vozTocando={vozTocando}
-        />
-      )}
-      {cena === "final" && <CenaFinal data={data} />}
-    </div>
+        <Petalas />
+
+        {/* Áudio */}
+        <audio ref={musicaRef} preload="auto" loop playsInline />
+        <audio ref={vozRef} preload="auto" playsInline />
+
+        {/* Cenas com crossfade cinematográfico */}
+        <AnimatePresence mode="wait">
+          {cena === "entrada" && (
+            <motion.div key="entrada" {...vars}>
+              <CenaEntrada onStart={() => { desbloquearAudio(); setCena("abertura"); }} />
+            </motion.div>
+          )}
+          {cena === "abertura" && (
+            <motion.div key="abertura" {...vars}>
+              <CenaAbertura nome1={data.nome_1} nome2={data.nome_2} onNext={() => setCena("b1")} />
+            </motion.div>
+          )}
+          {cena === "b1" && (
+            <motion.div key="b1" {...vars}>
+              <CenaBloco bloco={data.bloco_1} primeiro onNext={() => setCena("b2")}
+                onMusicaInicio={tocarMusica} onMusicaFim={pararMusica}
+                onVozToggle={alternarVoz} vozTocando={vozTocando} />
+            </motion.div>
+          )}
+          {cena === "b2" && (
+            <motion.div key="b2" {...vars}>
+              <CenaBloco bloco={data.bloco_2} primeiro={false}
+                onNext={() => { pararMusica(); setCena("final"); }}
+                onMusicaInicio={tocarMusica} onMusicaFim={pararMusica}
+                onVozToggle={alternarVoz} vozTocando={vozTocando} />
+            </motion.div>
+          )}
+          {cena === "final" && (
+            <motion.div key="final" {...vars}>
+              <CenaFinal data={data} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Botão de mudo flutuante — aparece depois que a experiência começa */}
+        {pronto && cena !== "entrada" && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8, delay: 1 }}
+            onClick={toggleMudo}
+            title={mutado ? "Ligar som" : "Silenciar"}
+            style={{
+              position: "fixed",
+              bottom: 24,
+              right: 20,
+              zIndex: 100,
+              width: 44,
+              height: 44,
+              borderRadius: "50%",
+              border: "1px solid rgba(233,198,154,0.25)",
+              background: "rgba(8,5,3,0.7)",
+              backdropFilter: "blur(12px)",
+              color: mutado ? "#7a6448" : "#e9c69a",
+              fontSize: 18,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              transition: "color 0.3s, border-color 0.3s",
+            }}
+          >
+            {mutado ? "🔇" : "🔊"}
+          </motion.button>
+        )}
+      </div>
+    </>
   );
 }
