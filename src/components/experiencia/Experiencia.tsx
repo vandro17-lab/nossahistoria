@@ -106,59 +106,58 @@ function NomeCaligrafia({ texto, delay = 0 }: { texto: string; delay?: number })
   );
 }
 
-function TextoCarta({
-  linhas,
-  onDone,
-  gap = 70,
-}: {
-  linhas: string[];
-  onDone?: () => void;
-  gap?: number;
-}) {
-  const palavras = linhas.flatMap((l, li) =>
-    l
-      .split(" ")
-      .map((w, wi) => ({ w, key: `${li}-${wi}`, br: false }))
-      .concat([{ w: "", key: `br-${li}`, br: true }])
+function TextoCarta({ linhas, onDone }: { linhas: string[]; onDone?: () => void }) {
+  type Item = { kind: "br" } | { kind: "linha"; texto: string; delay: number };
+
+  const itens: Item[] = [];
+  let t = 0;
+  for (const l of linhas) {
+    if (l.trim() === "") {
+      itens.push({ kind: "br" });
+      t += 0.38;
+    } else {
+      itens.push({ kind: "linha", texto: l, delay: t });
+      t += 0.64;
+    }
+  }
+
+  const textos = itens.filter(
+    (it): it is { kind: "linha"; texto: string; delay: number } => it.kind === "linha"
   );
+  const lastDelay = textos.length ? textos[textos.length - 1].delay : 0;
+  const totalMs = Math.round((lastDelay + 1.15 + 0.9) * 1000);
+
   useEffect(() => {
     if (!onDone) return;
-    const t = setTimeout(onDone, palavras.length * gap + 1400);
-    return () => clearTimeout(t);
+    const timer = setTimeout(onDone, totalMs);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  let count = -1;
+
   return (
-    <p
-      style={{
-        fontFamily: "var(--font-cormorant),serif",
-        fontSize: "clamp(22px,4.6vw,34px)",
-        lineHeight: 1.55,
-        color: "#f0e3d2",
-        textAlign: "center",
-        maxWidth: 640,
-        margin: "0 auto",
-        fontWeight: 400,
-      }}
-    >
-      {palavras.map((p) => {
-        if (p.br) return <br key={p.key} />;
-        count++;
+    <div style={{ textAlign: "center", maxWidth: 620, margin: "0 auto" }}>
+      {itens.map((it, i) => {
+        if (it.kind === "br") return <div key={i} style={{ height: "0.7em" }} />;
         return (
-          <span
-            key={p.key}
+          <motion.p
+            key={i}
+            initial={{ opacity: 0, y: 16, filter: "blur(5px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 1.15, delay: it.delay, ease: [0.16, 1, 0.3, 1] }}
             style={{
-              opacity: 0,
-              display: "inline-block",
-              animation: `wordIn .9s ease ${count * (gap / 1000)}s forwards`,
-              marginRight: "0.28em",
+              fontFamily: "var(--font-cormorant),serif",
+              fontSize: "clamp(22px,4.6vw,34px)",
+              lineHeight: 1.6,
+              color: "#f0e3d2",
+              margin: 0,
+              fontWeight: 400,
             }}
           >
-            {p.w}
-          </span>
+            {it.texto}
+          </motion.p>
         );
       })}
-    </p>
+    </div>
   );
 }
 
@@ -680,26 +679,33 @@ function CenaBloco({
   }
 
   // áudio (voz)
+  const temMensagem = !!bloco.mensagem_final;
   return (
     <Centro>
       <div style={{ textAlign: "center", maxWidth: 620 }}>
         {bloco.mensagem_final && (
-          <p
+          <motion.p
+            initial={{ opacity: 0, y: 14, filter: "blur(5px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 1.2, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             style={{
               fontFamily: "var(--font-cormorant),serif",
               fontStyle: "italic",
               fontSize: "clamp(20px,4.4vw,28px)",
               color: "#f0e3d2",
-              lineHeight: 1.55,
-              marginBottom: 26,
+              lineHeight: 1.58,
+              marginBottom: 28,
             }}
           >
-            “{bloco.mensagem_final}”
-          </p>
+            "{bloco.mensagem_final}"
+          </motion.p>
         )}
         {bloco.audio_src ? (
           <>
-            <p
+            <motion.p
+              initial={{ opacity: 0, y: 10, filter: "blur(3px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{ duration: 1.1, delay: temMensagem ? 0.72 : 0.28, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 fontFamily: "var(--font-cormorant),serif",
                 fontStyle: "italic",
@@ -708,11 +714,14 @@ function CenaBloco({
               }}
             >
               {bloco.nome} gravou algo pra você ouvir.
-            </p>
+            </motion.p>
             <PlayAudio playing={vozTocando} onToggle={() => onVozToggle(bloco.audio_src)} />
           </>
         ) : (
-          <p
+          <motion.p
+            initial={{ opacity: 0, y: 10, filter: "blur(3px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 1.1, delay: temMensagem ? 0.72 : 0.28, ease: [0.16, 1, 0.3, 1] }}
             style={{
               fontFamily: "var(--font-cormorant),serif",
               fontStyle: "italic",
@@ -721,7 +730,7 @@ function CenaBloco({
             }}
           >
             Com todo o carinho de {bloco.nome}.
-          </p>
+          </motion.p>
         )}
         <div style={{ marginTop: 10 }}>
           <Botao onClick={onNext}>{primeiro ? "..." : "Ver o final"}</Botao>
