@@ -65,6 +65,7 @@ export default function QRCartao({ casal }: { casal: Casal }) {
     ctx.font = "italic 32px Georgia, serif";
     ctx.letterSpacing = "6px";
     ctx.fillText("A R A Ç Á   G R I L L", W / 2, 160);
+    ctx.letterSpacing = "0px";
 
     // título
     ctx.fillStyle = "#e9c69a";
@@ -93,15 +94,25 @@ export default function QRCartao({ casal }: { casal: Casal }) {
 
     // frase
     ctx.fillStyle = "#f0e3d2";
-    ctx.font = "italic 40px Georgia, serif";
-    const frase = ["Esta noite foi preparada para vocês.", "Aproxime a câmera e descubram o porquê."];
-    frase.forEach((l, i) => ctx.fillText(l, W / 2, 1270 + i * 56));
+    ctx.font = "italic 34px Georgia, serif";
+    ctx.fillText("Esta noite foi preparada para vocês.", W / 2, 1230);
+    ctx.fillText("Aproxime a câmera e descubram o porquê.", W / 2, 1278);
+
+    // linha separadora
+    ctx.strokeStyle = "rgba(233,198,154,0.18)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(W / 2 - 120, 1330);
+    ctx.lineTo(W / 2 + 120, 1330);
+    ctx.stroke();
 
     // mesa
     if (casal.mesa) {
       ctx.fillStyle = "#9c8266";
       ctx.font = "28px Georgia, serif";
-      ctx.fillText(`Mesa ${casal.mesa}`, W / 2, 1410);
+      ctx.letterSpacing = "2px";
+      ctx.fillText(`MESA ${casal.mesa}`, W / 2, 1390);
+      ctx.letterSpacing = "0px";
     }
   }
 
