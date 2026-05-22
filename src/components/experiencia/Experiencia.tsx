@@ -725,21 +725,25 @@ export default function Experiencia({ data }: { data: ExperienciaView }) {
   }, [fade]);
 
   // Destrava o áudio no gesto de entrada (iOS/Safari)
+  // IMPORTANTE: o play() precisa ter um src válido para o iOS liberar o contexto de áudio.
   const desbloquearAudio = useCallback(() => {
-    [musicaRef.current, vozRef.current].forEach((el) => {
-      if (!el) return;
-      el.muted = true;
-      el.play()
-        .then(() => {
-          el.pause();
-          el.currentTime = 0;
-          el.muted = false;
-        })
-        .catch(() => {
-          el.muted = false;
-        });
-    });
-  }, []);
+    const musicaEl = musicaRef.current;
+    if (musicaEl) {
+      const primeiraSrc = data.bloco_1.musica_src || data.bloco_2.musica_src;
+      if (primeiraSrc) musicaEl.src = primeiraSrc;
+      musicaEl.muted = true;
+      musicaEl.play()
+        .then(() => { musicaEl.pause(); musicaEl.currentTime = 0; musicaEl.muted = false; })
+        .catch(() => { musicaEl.muted = false; });
+    }
+    const vozEl = vozRef.current;
+    if (vozEl) {
+      vozEl.muted = true;
+      vozEl.play()
+        .then(() => { vozEl.pause(); vozEl.currentTime = 0; vozEl.muted = false; })
+        .catch(() => { vozEl.muted = false; });
+    }
+  }, [data.bloco_1.musica_src, data.bloco_2.musica_src]);
 
   const alternarVoz = useCallback((src: string | null) => {
     const el = vozRef.current;
