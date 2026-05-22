@@ -22,7 +22,7 @@ export async function liberarCadastroPublico(
     return { ok: false, erro: "Link inválido. Confira com a equipe do Araçá Grill.", status: 404 };
   }
   const cadastro = await garantirCadastro(casalId, pessoa as 1 | 2);
-  if (cadastro.completo && cadastro.bloqueado) {
+  if (cadastro.bloqueado) {
     return {
       ok: false,
       erro: "Você já deixou sua homenagem com a gente. Agora é só esperar pelo dia 12.",

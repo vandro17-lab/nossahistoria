@@ -21,9 +21,15 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   const bloqueado = !!body.bloqueado;
 
   const cad = await garantirCadastro(params.id, pessoa);
+  // Ao reabrir (bloqueado=false), também zera completo para que a pessoa
+  // precise re-concluir — evita qualquer leitura de estado inconsistente.
+  const patch = bloqueado
+    ? { bloqueado: true, atualizado_em: new Date().toISOString() }
+    : { bloqueado: false, completo: false, atualizado_em: new Date().toISOString() };
+
   const { error } = await supabaseAdmin()
     .from("cadastros")
-    .update({ bloqueado, atualizado_em: new Date().toISOString() })
+    .update(patch)
     .eq("id", cad.id);
 
   if (error) return NextResponse.json({ erro: "Não foi possível alterar." }, { status: 500 });

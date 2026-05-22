@@ -77,6 +77,6 @@ export async function carregarCadastroPublico(
     fotos,
     musicaSrc: await urlAssinada("musicas", cadastro.musica_url),
     audioSrc: await urlAssinada("audios", cadastro.audio_url),
-    jaPreenchido: cadastro.completo && cadastro.bloqueado,
+    jaPreenchido: cadastro.bloqueado,
   };
 }
