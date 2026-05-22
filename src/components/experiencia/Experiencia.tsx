@@ -697,7 +697,7 @@ function CenaBloco({
               marginBottom: 28,
             }}
           >
-            "{bloco.mensagem_final}"
+            &ldquo;{bloco.mensagem_final}&rdquo;
           </motion.p>
         )}
         {bloco.audio_src ? (
