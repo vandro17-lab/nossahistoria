@@ -60,11 +60,18 @@ export default function QRCartao({ casal }: { casal: Casal }) {
 
     ctx.textAlign = "center";
 
-    // logo Araçá Grill
+    // logo Araçá Grill — recortada em círculo para sumir com cantos pretos
     try {
       const logo = await carregarImg("/logo-araca.png");
       const logoSize = 220;
-      ctx.drawImage(logo, (W - logoSize) / 2, 70, logoSize, logoSize);
+      const logoX = (W - logoSize) / 2;
+      const logoY = 70;
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(logoX + logoSize / 2, logoY + logoSize / 2, logoSize / 2, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(logo, logoX, logoY, logoSize, logoSize);
+      ctx.restore();
     } catch {
       ctx.fillStyle = "#9c8266";
       ctx.font = "italic 30px Georgia, serif";
