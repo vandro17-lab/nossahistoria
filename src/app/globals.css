@@ -18,6 +18,14 @@ body {
   background: #080503;
   color: #fff;
   font-family: var(--font-cormorant), Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Suaviza scroll em todo o site */
+* {
+  scroll-behavior: smooth;
 }
 
 /* ============================================================
@@ -78,10 +86,10 @@ body {
 }
 @keyframes kenburns {
   from {
-    transform: scale(1.05);
+    transform: scale(1.04);
   }
   to {
-    transform: scale(1.18) translate(-2%, -2%);
+    transform: scale(1.14) translate(-1.5%, -1.5%);
   }
 }
 @keyframes spin {

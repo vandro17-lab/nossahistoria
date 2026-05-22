@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { Volume2, VolumeX, Play, Pause, ChevronRight } from "lucide-react";
 import type { ExperienciaView, BlocoView, FotoView } from "@/lib/types";
 import TelaCarregamento from "./TelaCarregamento";
 
@@ -171,34 +172,45 @@ function Botao({
   big?: boolean;
 }) {
   return (
-    <button
+    <motion.button
       onClick={onClick}
+      whileHover={{ scale: 1.04, y: -3 }}
+      whileTap={{ scale: 0.97 }}
+      transition={{ type: "spring", stiffness: 380, damping: 28 }}
       style={{
         marginTop: 38,
-        padding: big ? "18px 46px" : "14px 36px",
+        padding: big ? "17px 52px" : "13px 38px",
         fontFamily: "var(--font-cormorant),serif",
-        fontSize: big ? 22 : 18,
+        fontSize: big ? 21 : 17,
         fontStyle: "italic",
-        letterSpacing: "0.04em",
+        letterSpacing: "0.06em",
         color: "#1a0f08",
-        background: "linear-gradient(135deg,#e9c69a,#c8924f)",
+        background: "linear-gradient(135deg, #edd9a3 0%, #d4a055 50%, #c8924f 100%)",
         border: "none",
         borderRadius: 999,
         cursor: "pointer",
-        boxShadow: "0 8px 30px rgba(200,146,79,0.35)",
-        transition: "transform .3s, box-shadow .3s",
-      }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "translateY(-2px) scale(1.03)";
-        e.currentTarget.style.boxShadow = "0 12px 40px rgba(200,146,79,0.5)";
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "none";
-        e.currentTarget.style.boxShadow = "0 8px 30px rgba(200,146,79,0.35)";
+        boxShadow: "0 6px 28px rgba(200,146,79,0.38), inset 0 1px 0 rgba(255,255,255,0.18)",
+        position: "relative",
+        overflow: "hidden",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
       }}
     >
-      {children}
-    </button>
+      {/* shimmer interno */}
+      <motion.span
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "linear-gradient(105deg, transparent 35%, rgba(255,255,255,0.18) 50%, transparent 65%)",
+          backgroundSize: "200% 100%",
+        }}
+        animate={{ backgroundPositionX: ["200%", "-200%"] }}
+        transition={{ duration: 3.5, repeat: Infinity, ease: "linear", repeatDelay: 1.5 }}
+      />
+      <span style={{ position: "relative" }}>{children}</span>
+    </motion.button>
   );
 }
 
@@ -229,11 +241,13 @@ function FullFoto({
   idx: number;
   total: number;
 }) {
-  const fundo = foto.src
-    ? `url("${foto.src}")`
-    : gradFallback(idx);
+  const fundo = foto.src ? `url("${foto.src}")` : gradFallback(idx);
   return (
-    <div
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.9, ease: "easeInOut" }}
       style={{
         minHeight: "100dvh",
         position: "relative",
@@ -244,6 +258,7 @@ function FullFoto({
         overflow: "hidden",
       }}
     >
+      {/* Foto com Ken Burns */}
       <div
         style={{
           position: "absolute",
@@ -251,129 +266,202 @@ function FullFoto({
           background: fundo,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          animation: "kenburns 6s ease forwards",
-          transformOrigin: "60% 40%",
+          animation: "kenburns 7s ease forwards",
+          transformOrigin: "55% 45%",
+          willChange: "transform",
         }}
       />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(to top, rgba(8,5,3,0.95) 0%, rgba(8,5,3,0.2) 50%, transparent 100%)",
-        }}
-      />
-      <div style={{ position: "relative", padding: "0 28px 90px", maxWidth: 620, textAlign: "center" }}>
+
+      {/* Vinheta cinematográfica nas 4 bordas */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0,
+        background: "radial-gradient(ellipse 90% 80% at 50% 50%, transparent 30%, rgba(8,5,3,0.55) 100%)",
+        pointerEvents: "none",
+      }} />
+      {/* Gradiente inferior mais suave */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to top, rgba(8,5,3,0.92) 0%, rgba(8,5,3,0.3) 38%, transparent 62%)",
+        pointerEvents: "none",
+      }} />
+      {/* Topo escuro sutil */}
+      <div aria-hidden style={{
+        position: "absolute", inset: 0,
+        background: "linear-gradient(to bottom, rgba(8,5,3,0.45) 0%, transparent 22%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Legenda e indicador */}
+      <div style={{ position: "relative", padding: "0 32px 80px", maxWidth: 600, textAlign: "center", width: "100%" }}>
         {foto.mensagem && (
-          <p
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.7, ease: [0.22, 1, 0.36, 1] }}
             style={{
               fontFamily: "var(--font-cormorant),serif",
               fontStyle: "italic",
-              fontSize: "clamp(20px,4.4vw,28px)",
-              color: "#f4ead9",
-              lineHeight: 1.5,
-              opacity: 0,
-              animation: "subtitleIn 1.4s ease 0.8s forwards",
+              fontSize: "clamp(19px,4.2vw,26px)",
+              color: "rgba(244,234,217,0.92)",
+              lineHeight: 1.6,
+              textShadow: "0 2px 16px rgba(0,0,0,0.5)",
+              letterSpacing: "0.01em",
             }}
           >
             {foto.mensagem}
-          </p>
+          </motion.p>
         )}
-        <div style={{ display: "flex", gap: 7, justifyContent: "center", marginTop: 26 }}>
+        {/* Indicador de fotos — pontos minimalistas */}
+        <div style={{ display: "flex", gap: 6, justifyContent: "center", marginTop: 20 }}>
           {Array.from({ length: total }).map((_, i) => (
-            <span
+            <motion.span
               key={i}
+              animate={{ width: i === idx ? 20 : 5, opacity: i === idx ? 1 : 0.35 }}
+              transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
               style={{
-                width: i === idx ? 22 : 7,
-                height: 7,
-                borderRadius: 9,
-                background: i === idx ? "#e9c69a" : "rgba(233,198,154,0.3)",
-                transition: "width .5s",
+                height: 2,
+                borderRadius: 2,
+                background: "#e9c69a",
+                display: "block",
               }}
             />
           ))}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
 function MusicaVinil({ titulo }: { titulo: string }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "28px 0" }}>
-      <div
-        style={{
-          width: 150,
-          height: 150,
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "32px 0" }}>
+      {/* halo dourado suave atrás do disco */}
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <div aria-hidden style={{
+          position: "absolute",
+          width: 200, height: 200,
           borderRadius: "50%",
-          background: "repeating-radial-gradient(#1a1109 0 2px,#0a0604 2px 4px)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          animation: "spin 6s linear infinite",
-          boxShadow: "0 10px 40px rgba(0,0,0,0.6)",
-        }}
-      >
-        <div style={{ width: 46, height: 46, borderRadius: "50%", background: "linear-gradient(135deg,#e9c69a,#c8924f)" }} />
+          background: "radial-gradient(circle, rgba(200,146,79,0.12) 0%, transparent 70%)",
+          animation: "pulse 3s ease-in-out infinite",
+        }} />
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+          style={{
+            width: 148,
+            height: 148,
+            borderRadius: "50%",
+            background: "repeating-radial-gradient(#1e1408 0 1.5px, #0d0804 1.5px 3.5px)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 12px 48px rgba(0,0,0,0.75), 0 0 0 1px rgba(233,198,154,0.08)",
+          }}
+        >
+          {/* centro do disco */}
+          <div style={{
+            width: 44,
+            height: 44,
+            borderRadius: "50%",
+            background: "conic-gradient(from 0deg, #e9c69a, #c8924f, #a06830, #e9c69a)",
+            boxShadow: "inset 0 0 12px rgba(0,0,0,0.4), 0 0 0 1px rgba(233,198,154,0.2)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}>
+            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0d0804" }} />
+          </div>
+        </motion.div>
       </div>
-      <p
+
+      <motion.p
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.9, delay: 0.4 }}
         style={{
-          marginTop: 22,
+          marginTop: 24,
           fontFamily: "var(--font-cormorant),serif",
           fontStyle: "italic",
-          fontSize: 24,
+          fontSize: "clamp(20px,4.5vw,26px)",
           color: "#f0e3d2",
+          letterSpacing: "0.01em",
+          textAlign: "center",
+          maxWidth: 300,
+          lineHeight: 1.4,
         }}
       >
         {titulo}
-      </p>
-      <p style={{ fontSize: 12, color: "#7a6448", letterSpacing: "0.2em", textTransform: "uppercase", marginTop: 4 }}>
-        tocando em fade ·•·
-      </p>
+      </motion.p>
+      <motion.p
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.9, delay: 0.8 }}
+        style={{ fontSize: 11, color: "#5a4430", letterSpacing: "0.28em", textTransform: "uppercase", marginTop: 8 }}
+      >
+        tocando agora ·•·
+      </motion.p>
     </div>
   );
 }
 
 function PlayAudio({ playing, onToggle }: { playing: boolean; onToggle: () => void }) {
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "30px 0" }}>
-      <button
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", margin: "28px 0" }}>
+      <motion.button
         onClick={onToggle}
+        whileHover={{ scale: 1.07 }}
+        whileTap={{ scale: 0.93 }}
+        transition={{ type: "spring", stiffness: 400, damping: 22 }}
         style={{
-          width: 86,
-          height: 86,
+          width: 72,
+          height: 72,
           borderRadius: "50%",
-          border: "1px solid rgba(233,198,154,0.4)",
-          background: "rgba(233,198,154,0.06)",
+          border: "1px solid rgba(233,198,154,0.3)",
+          background: "radial-gradient(circle at 40% 35%, rgba(233,198,154,0.1) 0%, rgba(8,5,3,0.6) 100%)",
           color: "#e9c69a",
-          fontSize: 30,
           cursor: "pointer",
           position: "relative",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          boxShadow: "0 0 0 1px rgba(233,198,154,0.08), 0 8px 32px rgba(0,0,0,0.5)",
+          backdropFilter: "blur(8px)",
         }}
       >
-        <span
-          style={{
-            position: "absolute",
-            inset: -8,
-            borderRadius: "50%",
-            border: "1px solid rgba(233,198,154,0.25)",
-            animation: playing ? "pulse 1.8s ease-out infinite" : "none",
-          }}
-        />
-        {playing ? "❚❚" : "▶"}
-      </button>
-      <div style={{ display: "flex", gap: 3, height: 26, alignItems: "center", marginTop: 18 }}>
-        {Array.from({ length: 24 }).map((_, i) => (
-          <span
-            key={i}
+        {/* anel pulsante quando tocando */}
+        {playing && (
+          <motion.span
+            aria-hidden
             style={{
-              width: 3,
-              borderRadius: 2,
-              background: "#c8924f",
-              height: playing ? `${20 + Math.sin(i) * 10}px` : 4,
-              animation: playing ? `wave 1s ease-in-out ${i * 0.05}s infinite alternate` : "none",
-              transition: "height .3s",
+              position: "absolute",
+              inset: -8,
+              borderRadius: "50%",
+              border: "1px solid rgba(233,198,154,0.2)",
             }}
+            animate={{ scale: [1, 1.18, 1], opacity: [0.6, 0, 0.6] }}
+            transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
+          />
+        )}
+        <AnimatePresence mode="wait">
+          {playing
+            ? <motion.span key="pause" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} transition={{ duration: 0.2 }}><Pause size={22} strokeWidth={1.5} /></motion.span>
+            : <motion.span key="play" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} transition={{ duration: 0.2 }}><Play size={22} strokeWidth={1.5} /></motion.span>
+          }
+        </AnimatePresence>
+      </motion.button>
+
+      {/* barras de equalizador */}
+      <div style={{ display: "flex", gap: 3, height: 22, alignItems: "center", marginTop: 16 }}>
+        {Array.from({ length: 18 }).map((_, i) => (
+          <motion.span
+            key={i}
+            style={{ width: 2.5, borderRadius: 2, background: "rgba(200,146,79,0.6)", display: "block" }}
+            animate={playing
+              ? { height: [4, 14 + Math.abs(Math.sin(i * 0.7)) * 8, 4] }
+              : { height: 3 }}
+            transition={playing
+              ? { duration: 0.9 + (i % 3) * 0.2, repeat: Infinity, ease: "easeInOut", delay: i * 0.04 }
+              : { duration: 0.4 }}
           />
         ))}
       </div>
@@ -959,25 +1047,30 @@ export default function Experiencia({ data }: { data: ExperienciaView }) {
             title={mutado ? "Ligar som" : "Silenciar"}
             style={{
               position: "fixed",
-              bottom: 24,
-              right: 20,
+              bottom: 28,
+              right: 22,
               zIndex: 100,
-              width: 44,
-              height: 44,
+              width: 42,
+              height: 42,
               borderRadius: "50%",
-              border: "1px solid rgba(233,198,154,0.25)",
-              background: "rgba(8,5,3,0.7)",
-              backdropFilter: "blur(12px)",
-              color: mutado ? "#7a6448" : "#e9c69a",
-              fontSize: 18,
+              border: `1px solid ${mutado ? "rgba(233,198,154,0.1)" : "rgba(233,198,154,0.22)"}`,
+              background: "rgba(8,5,3,0.72)",
+              backdropFilter: "blur(16px)",
+              color: mutado ? "#4a3828" : "#c8924f",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              transition: "color 0.3s, border-color 0.3s",
+              transition: "color 0.35s, border-color 0.35s",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.4)",
             }}
           >
-            {mutado ? "🔇" : "🔊"}
+            <AnimatePresence mode="wait">
+              {mutado
+                ? <motion.span key="mute" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} transition={{ duration: 0.2 }}><VolumeX size={16} strokeWidth={1.5} /></motion.span>
+                : <motion.span key="on" initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.7 }} transition={{ duration: 0.2 }}><Volume2 size={16} strokeWidth={1.5} /></motion.span>
+              }
+            </AnimatePresence>
           </motion.button>
         )}
       </div>
