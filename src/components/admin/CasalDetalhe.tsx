@@ -315,18 +315,20 @@ function MusicaEtapa({
     fd.append("titulo", titulo);
     setEstado("salvando");
     const r = await enviarArquivo(`/api/admin/cadastros/${cad.id}/musica`, "POST", fd);
-    setEstado(null);
     if (!r.ok) {
+      setEstado(null);
       onErro(r.erro || "Não foi possível enviar.");
       return;
     }
+    setEstado("salvo");
+    setTimeout(() => setEstado(null), 1500);
     onAviso("Música atualizada ✓");
     onMudou();
   }
 
   return (
     <Cartao>
-      <CabecalhoEtapa numero={numero} titulo={`Música de ${nome}`} ok={!!cad.musica_titulo} />
+      <CabecalhoEtapa numero={numero} titulo={`Música de ${nome}`} ok={!!cad.musica_titulo && !!cad.musica_url} />
       <Campo label="Título da música" valor={titulo} onChange={setTitulo} placeholder="ex.: La Vie en Rose — Édith Piaf" />
       <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
         <BotaoLinha onClick={salvarTitulo}>Salvar título</BotaoLinha>

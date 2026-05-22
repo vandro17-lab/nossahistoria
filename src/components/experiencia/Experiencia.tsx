@@ -517,6 +517,7 @@ function CenaBloco({
             if (fotos.length > 0) {
               setEtapa("fotos");
             } else {
+              onMusicaInicio(bloco.musica_src);
               setEtapa("audio");
             }
           }}
