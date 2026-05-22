@@ -95,12 +95,12 @@ export default function Cadastro(props: {
 
   // música
   const [musTitulo, setMusTitulo] = useState(props.musicaTitulo);
-  const [musFile, setMusFile] = useState<File | null>(null);
   const [temMusica, setTemMusica] = useState(props.temMusica);
 
   // fotos
   const [fotos, setFotos] = useState<FotoEdit[]>(props.fotosIniciais);
   const [subindoFoto, setSubindoFoto] = useState(false);
+  const [progressoFoto, setProgressoFoto] = useState<{ atual: number; total: number } | null>(null);
 
   // áudio
   const [temAudio, setTemAudio] = useState(props.temAudio);
@@ -120,11 +120,9 @@ export default function Cadastro(props: {
     setSalvando(true);
     const fd = new FormData();
     fd.append("titulo", musTitulo);
-    if (musFile) fd.append("file", musFile);
     try {
       const r = await fetch(`${api}/musica`, { method: "POST", body: fd });
       if (!r.ok) throw new Error();
-      if (musFile) setTemMusica(true);
       setEtapa("fotos");
     } catch {
       setErro("Não consegui salvar a música. Tente de novo.");
@@ -135,27 +133,34 @@ export default function Cadastro(props: {
 
   // ---------- fotos ----------
   async function adicionarFoto(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
+    const files = Array.from(e.target.files || []);
     e.target.value = "";
-    if (!file) return;
-    if (fotos.length >= 10) {
-      setErro("Você já escolheu 10 momentos — lindos demais!");
-      return;
-    }
+    if (!files.length) return;
+
+    const disponiveis = 10 - fotos.length;
+    if (disponiveis <= 0) { setErro("Você já escolheu 10 momentos — lindos demais!"); return; }
+    const lote = files.slice(0, disponiveis);
+    if (files.length > disponiveis) setErro(`Só cabem mais ${disponiveis} foto${disponiveis > 1 ? "s" : ""}. Enviando as primeiras.`);
+
     setSubindoFoto(true);
-    try {
-      const comp = await imageCompression(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920, useWebWorker: true });
-      const fd = new FormData();
-      fd.append("file", comp, file.name);
-      const r = await fetch(`${api}/fotos`, { method: "POST", body: fd });
-      const json = await r.json();
-      if (!r.ok) throw new Error(json?.erro);
-      if (json.foto) setFotos((f) => [...f, { id: json.foto.id, src: json.foto.src, mensagem: json.foto.mensagem || "" }]);
-    } catch (err: any) {
-      setErro(err?.message || "Não consegui enviar a foto. Tente outra.");
-    } finally {
-      setSubindoFoto(false);
+    setProgressoFoto({ atual: 0, total: lote.length });
+    for (let i = 0; i < lote.length; i++) {
+      setProgressoFoto({ atual: i + 1, total: lote.length });
+      try {
+        const file = lote[i];
+        const comp = await imageCompression(file, { maxSizeMB: 1.5, maxWidthOrHeight: 1920, useWebWorker: true });
+        const fd = new FormData();
+        fd.append("file", comp, file.name);
+        const r = await fetch(`${api}/fotos`, { method: "POST", body: fd });
+        const json = await r.json();
+        if (!r.ok) throw new Error(json?.erro);
+        if (json.foto) setFotos((f) => [...f, { id: json.foto.id, src: json.foto.src, mensagem: json.foto.mensagem || "" }]);
+      } catch (err: any) {
+        setErro(err?.message || `Não consegui enviar a foto ${i + 1}. As demais foram salvas.`);
+      }
     }
+    setSubindoFoto(false);
+    setProgressoFoto(null);
   }
 
   async function salvarLegenda(foto: FotoEdit) {
@@ -275,13 +280,6 @@ export default function Cadastro(props: {
         </Titulo>
         <div style={{ marginTop: 18, textAlign: "left" }}>
           <input value={musTitulo} onChange={(e) => setMusTitulo(e.target.value)} placeholder="Nome da música e do artista" style={campoEstilo} />
-          <label style={{ display: "block", marginTop: 14, fontSize: 14, color: fraco }}>
-            <span style={{ display: "block", marginBottom: 8 }}>
-              Envie um trecho da música (MP3, ~15-30s){temMusica ? " — já recebido ✓" : ""}
-            </span>
-            <input type="file" accept="audio/mpeg,audio/mp3,audio/*" onChange={(e) => setMusFile(e.target.files?.[0] || null)} style={{ color: areia, fontSize: 14 }} />
-            {musFile && <span style={{ display: "block", marginTop: 6, color: ouro, fontSize: 13 }}>{musFile.name}</span>}
-          </label>
         </div>
         <div><Botao onClick={continuarMusica} disabled={salvando}>{salvando ? "Salvando…" : "Continuar"}</Botao></div>
         {Toast}
@@ -321,9 +319,9 @@ export default function Cadastro(props: {
         </div>
 
         {fotos.length < 10 && (
-          <label style={{ display: "inline-block", marginTop: 16, padding: "12px 24px", borderRadius: 999, border: "1px solid rgba(233,198,154,0.3)", color: ouro, cursor: "pointer", fontSize: 16 }}>
-            {subindoFoto ? "Enviando…" : "+ Adicionar foto"}
-            <input type="file" accept="image/*" onChange={adicionarFoto} style={{ display: "none" }} disabled={subindoFoto} />
+          <label style={{ display: "inline-block", marginTop: 16, padding: "12px 24px", borderRadius: 999, border: "1px solid rgba(233,198,154,0.3)", color: ouro, cursor: subindoFoto ? "not-allowed" : "pointer", fontSize: 16 }}>
+            {subindoFoto && progressoFoto ? `Enviando ${progressoFoto.atual}/${progressoFoto.total}…` : "+ Adicionar fotos"}
+            <input type="file" accept="image/*" multiple onChange={adicionarFoto} style={{ display: "none" }} disabled={subindoFoto} />
           </label>
         )}
 

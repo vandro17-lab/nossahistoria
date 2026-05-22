@@ -60,31 +60,37 @@ export default function QRCartao({ casal }: { casal: Casal }) {
 
     ctx.textAlign = "center";
 
-    // selo topo
-    ctx.fillStyle = "#9c8266";
-    ctx.font = "italic 30px Georgia, serif";
-    ctx.fillText("A R A Ç Á   G R I L L", W / 2, 150);
+    // logo Araçá Grill
+    try {
+      const logo = await carregarImg("/logo-araca.png");
+      const logoSize = 220;
+      ctx.drawImage(logo, (W - logoSize) / 2, 70, logoSize, logoSize);
+    } catch {
+      ctx.fillStyle = "#9c8266";
+      ctx.font = "italic 30px Georgia, serif";
+      ctx.fillText("A R A Ç Á   G R I L L", W / 2, 150);
+    }
 
     // título
     ctx.fillStyle = "#e9c69a";
     ctx.font = "italic 88px Georgia, serif";
-    ctx.fillText("Nossa História", W / 2, 270);
+    ctx.fillText("Nossa História", W / 2, 350);
 
     // nomes do casal
     ctx.fillStyle = "#f0e3d2";
     ctx.font = "italic 64px Georgia, serif";
-    ctx.fillText(`${casal.nome_1}  &  ${casal.nome_2}`, W / 2, 380);
+    ctx.fillText(`${casal.nome_1}  &  ${casal.nome_2}`, W / 2, 460);
 
     // data
     ctx.fillStyle = "#c8924f";
     ctx.font = "30px Georgia, serif";
-    ctx.fillText("12 de junho", W / 2, 440);
+    ctx.fillText("12 de junho", W / 2, 520);
 
     // QR em moldura clara
     const qrImg = await carregarImg(qrUrl);
     const qrSize = 520;
     const qrX = (W - qrSize) / 2;
-    const qrY = 520;
+    const qrY = 590;
     ctx.fillStyle = "#f4ead9";
     arredondado(ctx, qrX - 26, qrY - 26, qrSize + 52, qrSize + 52, 28);
     ctx.fill();
@@ -94,13 +100,13 @@ export default function QRCartao({ casal }: { casal: Casal }) {
     ctx.fillStyle = "#f0e3d2";
     ctx.font = "italic 40px Georgia, serif";
     const frase = ["Esta noite foi preparada para vocês.", "Aproxime a câmera e descubram o porquê."];
-    frase.forEach((l, i) => ctx.fillText(l, W / 2, 1200 + i * 56));
+    frase.forEach((l, i) => ctx.fillText(l, W / 2, 1270 + i * 56));
 
     // mesa
     if (casal.mesa) {
       ctx.fillStyle = "#9c8266";
       ctx.font = "28px Georgia, serif";
-      ctx.fillText(`Mesa ${casal.mesa}`, W / 2, 1360);
+      ctx.fillText(`Mesa ${casal.mesa}`, W / 2, 1410);
     }
   }
 
