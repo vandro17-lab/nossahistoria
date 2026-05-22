@@ -630,7 +630,7 @@ function CenaBloco({
     return (
       <Centro>
         <TextoCarta
-          linhas={[`Agora é a vez de ${bloco.nome}.`, "Tudo o que você vai ver", "foi escolhido pensando em você."]}
+          linhas={[`Agora é a vez de ${bloco.nome}.`, "Tudo o que você vai ver", "foi escolhido por quem mais te conhece."]}
           onDone={() => setEtapa("musica")}
         />
       </Centro>
@@ -663,7 +663,7 @@ function CenaBloco({
     return (
       <Centro>
         <TextoCarta
-          linhas={[`${bloco.nome} pensou em você.`, "Escolheu cada foto,", "cada palavra, cada silêncio.", "", "Tudo isso é pra você."]}
+          linhas={[`${bloco.nome} pensou em você.`, "Escolheu cada foto,", "cada palavra, cada silêncio.", "", "Tudo. Só pra você."]}
           onDone={() => {
             setFotoIdx(0);
             setEtapa(fotos.length > 0 ? "fotos" : "audio");
@@ -713,7 +713,7 @@ function CenaBloco({
                 color: "#f0e3d2",
               }}
             >
-              {bloco.nome} gravou algo pra você ouvir.
+              {bloco.nome} tem algo pra te dizer.
             </motion.p>
             <PlayAudio playing={vozTocando} onToggle={() => onVozToggle(bloco.audio_src)} />
           </>
@@ -729,7 +729,7 @@ function CenaBloco({
               color: "#cdb89e",
             }}
           >
-            Com todo o carinho de {bloco.nome}.
+            Com amor, {bloco.nome}.
           </motion.p>
         )}
         <div style={{ marginTop: 10 }}>
@@ -832,8 +832,8 @@ function CenaFinal({ data }: { data: ExperienciaView }) {
           transition={{ duration: 1.4, delay: todas.length * 0.15 + 2.4 }}
           style={{ fontFamily: "var(--font-cormorant),serif", fontSize: 17, color: "#9c8266", lineHeight: 1.7 }}
         >
-          É uma honra ter vocês aqui esta noite.<br />
-          Que esse seja mais um momento<br />que vocês nunca esqueçam.
+          Que alegria ter vocês aqui esta noite.<br />
+          Que essa noite fique guardada<br />para sempre.
         </motion.p>
 
         <motion.p

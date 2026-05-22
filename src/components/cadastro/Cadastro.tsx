@@ -352,7 +352,7 @@ export default function Cadastro(props: {
                 <Titulo delay={0.55}>Deixou algo lindo pra você — mas isso é surpresa.</Titulo>
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.9 }}
                   style={{ color: areia, fontSize: 18, marginTop: 10, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic" }}>
-                  Agora é a sua vez de fazer o mesmo.
+                  Agora chegou a sua vez.
                 </motion.p>
               </>
             )}
@@ -397,10 +397,14 @@ export default function Cadastro(props: {
         {/* ── FOTOS ── */}
         {etapa === "fotos" && (
           <motion.div key="fotos" variants={paginaVariants} initial="initial" animate="animate" exit="exit">
-            <Titulo delay={0}>Escolha até 10 momentos que contam a história de vocês.</Titulo>
+            <Titulo delay={0}>Escolha os momentos que ficaram. Podem ser até 10.</Titulo>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.3 }}
-              style={{ color: fraco, fontSize: 15, marginBottom: 22, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", lineHeight: 1.55 }}>
+              style={{ color: fraco, fontSize: 15, marginBottom: 8, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", lineHeight: 1.55 }}>
               Uma risada, uma viagem, um dia simples que ficou na memória.
+            </motion.p>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.45 }}
+              style={{ color: "#5a4430", fontSize: 13, marginBottom: 22, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", lineHeight: 1.5 }}>
+              Antes da experiência começar, nossa equipe dá uma olhada em cada foto para garantir que tudo fique lindo.
             </motion.p>
 
             <AnimatePresence>
@@ -491,7 +495,7 @@ export default function Cadastro(props: {
             </Titulo>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.35 }}
               style={{ color: fraco, fontSize: 15, marginBottom: 28, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", lineHeight: 1.6 }}>
-              Pode ser um segredo, uma lembrança, um te amo.<br />Só a voz já diz tudo.
+              Pode ser um segredo, uma memória, um te amo.<br />Não precisa ser perfeito — só precisa ser seu.
             </motion.p>
 
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.5 }}>
@@ -541,11 +545,11 @@ export default function Cadastro(props: {
                 fontSize: "clamp(18px,4.2vw,26px)", color: creme, lineHeight: 1.75,
                 fontStyle: "italic", marginBottom: 20,
               }}>
-              Cada foto que você enviou passa por um olhar cuidadoso da nossa equipe antes da experiência ir ao ar — só para deixar tudo perfeito.
+              Tudo pronto. Sua parte está feita.
             </motion.p>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.7 }}
               style={{ fontFamily: "var(--font-cormorant),serif", fontSize: "clamp(17px,3.8vw,22px)", color: areia, lineHeight: 1.7, fontStyle: "italic" }}>
-              Depois, só vocês dois verão o resultado.<br />Estamos aqui para cuidar de cada detalhe com carinho.
+              Agora é só esperar a noite.
             </motion.p>
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, delay: 1.2 }}>
               <Botao onClick={concluir} disabled={salvando}>
@@ -562,9 +566,9 @@ export default function Cadastro(props: {
               transition={{ duration: 1.2, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
               style={{ width: 48, height: 1, background: "rgba(200,146,79,0.5)", margin: "0 auto 32px", transformOrigin: "center" }}
             />
-            <Titulo delay={0.3}>Que lindo o que você preparou.</Titulo>
+            <Titulo delay={0.3}>Você fez algo muito bonito hoje.</Titulo>
             <Titulo delay={0.6}>
-              <strong style={{ color: ouro, fontStyle: "normal" }}>{nomeParceiro}</strong> não vai saber o que vai encontrar.
+              <strong style={{ color: ouro, fontStyle: "normal" }}>{nomeParceiro}</strong> não tem a menor ideia do que está por vir.
             </Titulo>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: 1 }}
               style={{ color: areia, fontSize: 18, marginTop: 14, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic" }}>

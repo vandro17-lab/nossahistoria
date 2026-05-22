@@ -4,9 +4,9 @@ import { useEffect, useRef, useState } from "react";
 
 const FRASES = [
   "Estamos preparando a história de vocês…",
-  "Cada detalhe sendo ajustado com cuidado.",
-  "Um momento que vocês nunca vão esquecer.",
-  "Quase pronto. Vale a espera.",
+  "Cada imagem, cada som, cada momento.",
+  "Esta noite foi feita para vocês dois.",
+  "Quase lá. Respira.",
 ];
 
 export default function TelaCarregamento({
