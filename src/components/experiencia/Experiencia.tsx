@@ -638,7 +638,7 @@ function CenaEntrada({ onStart }: { onStart: () => void }) {
 function CenaAbertura({ nome1, nome2, onNext }: { nome1: string; nome2: string; onNext: () => void }) {
   const [fase, setFase] = useState(0);
   useEffect(() => {
-    const a = setTimeout(() => setFase(1), 4200);
+    const a = setTimeout(() => setFase(1), 6200);
     return () => clearTimeout(a);
   }, []);
   return (
