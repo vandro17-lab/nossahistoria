@@ -557,7 +557,7 @@ function CenaAbertura({ nome1, nome2, onNext }: { nome1: string; nome2: string; 
   return (
     <Centro>
       {fase === 0 && (
-        <TextoCarta linhas={["Há momentos que merecem", "ser vividos devagar.", "", "Este é um deles."]} />
+        <TextoCarta linhas={["Talvez vocês não lembrem de todas as datas.", "Mas vão lembrar desse sentimento.", "", "Por muito tempo."]} />
       )}
       {fase === 1 && (
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
@@ -650,7 +650,7 @@ function CenaBloco({
               fontFamily: "var(--font-cormorant),serif",
             }}
           >
-            A música de {bloco.nome}
+            A música que {bloco.nome} escolheu pra você
           </div>
           <MusicaVinil titulo={bloco.musica_titulo || "Uma canção especial"} />
           <Botao onClick={() => setEtapa("dedica")}>Continuar</Botao>
@@ -733,7 +733,7 @@ function CenaBloco({
           </motion.p>
         )}
         <div style={{ marginTop: 10 }}>
-          <Botao onClick={onNext}>{primeiro ? "..." : "Ver o final"}</Botao>
+          <Botao onClick={onNext}>{primeiro ? "Tem mais..." : "Ver o final"}</Botao>
         </div>
       </div>
     </Centro>
