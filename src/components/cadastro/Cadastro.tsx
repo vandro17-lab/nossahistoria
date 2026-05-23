@@ -645,6 +645,12 @@ export default function Cadastro(props: {
               style={{ marginTop: 40, letterSpacing: "0.35em", textTransform: "uppercase", fontSize: 12, color: ouroF }}>
               Araçá Grill
             </motion.p>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 2.2 }}
+              style={{ marginTop: 28, color: fraco, fontSize: 13.5, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", lineHeight: 1.7 }}>
+              A homenagem estará pronta para o dia 12 de junho —<br />
+              direto no celular de vocês, naquela noite.<br />
+              O acesso só será entregue na hora.
+            </motion.p>
           </motion.div>
         )}
 
