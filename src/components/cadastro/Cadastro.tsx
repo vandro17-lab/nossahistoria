@@ -10,7 +10,7 @@ import GravadorVoz from "@/components/GravadorVoz";
 //  CADASTRO — tela do casal (tom de carta, nunca formulário)
 // ============================================================
 
-type Etapa = "abertura" | "musica" | "fotos" | "audio" | "aviso" | "final";
+type Etapa = "parceiro" | "abertura" | "musica" | "fotos" | "audio" | "aviso" | "final";
 interface FotoEdit { id: string; src: string; mensagem: string; }
 
 const base = "#080503";
@@ -209,7 +209,12 @@ export default function Cadastro(props: {
   const { casalId, pessoa, nomePessoa, nomeParceiro } = props;
   const api = `/api/cadastro/${casalId}/${pessoa}`;
 
-  const [etapa, setEtapa] = useState<Etapa>("abertura");
+  const [etapa, setEtapa] = useState<Etapa>(
+    pessoa === 1 && !nomeParceiro.trim() ? "parceiro" : "abertura"
+  );
+  const [nomeParc, setNomeParc] = useState("");
+  const [waParc, setWaParc] = useState("");
+  const [salvandoParc, setSalvandoParc] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [musTitulo, setMusTitulo] = useState(props.musicaTitulo);
   const [fotos, setFotos] = useState<FotoEdit[]>(props.fotosIniciais);
@@ -219,6 +224,20 @@ export default function Cadastro(props: {
   const [enviandoAudio, setEnviandoAudio] = useState(false);
   const [mensagemFinal, setMensagemFinal] = useState(props.mensagemFinal);
   const [salvando, setSalvando] = useState(false);
+
+  async function salvarParceiro() {
+    if (!nomeParc.trim()) { setErro("Conta pra gente o nome do parceiro ou parceira."); return; }
+    setSalvandoParc(true);
+    try {
+      const r = await fetch(`${api}/parceiro`, {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ nome: nomeParc, whatsapp: waParc }),
+      });
+      if (!r.ok) throw new Error();
+      setEtapa("abertura");
+    } catch { setErro("Não consegui salvar. Tente de novo."); }
+    finally { setSalvandoParc(false); }
+  }
 
   async function continuarMusica() {
     if (!musTitulo.trim()) { setErro("Conta pra gente o nome da música."); return; }
@@ -327,6 +346,52 @@ export default function Cadastro(props: {
     <Wrap>
       <BarraProgresso etapa={etapa} />
       <AnimatePresence mode="wait">
+
+        {/* ── PARCEIRO ── */}
+        {etapa === "parceiro" && (
+          <motion.div key="parceiro" variants={paginaVariants} initial="initial" animate="animate" exit="exit">
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 0.2 }}
+              style={{ letterSpacing: "0.3em", fontSize: 11, color: fraco, textTransform: "uppercase", marginBottom: 32 }}>
+              Araçá Grill
+            </motion.p>
+            <Titulo delay={0.3}>Antes de começar…</Titulo>
+            <Titulo delay={0.55}>Quem é a pessoa que vive essa história com você?</Titulo>
+            <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.85 }}
+              style={{ color: fraco, fontSize: 15, marginTop: 4, marginBottom: 24, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", lineHeight: 1.6 }}>
+              Vamos convidá-la a participar desta experiência também.
+            </motion.p>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 1 }}
+              style={{ display: "flex", flexDirection: "column", gap: 12, textAlign: "left" }}>
+              <input
+                value={nomeParc}
+                onChange={(e) => setNomeParc(e.target.value)}
+                placeholder="Nome do parceiro ou parceira"
+                style={campoBase}
+                onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(233,198,154,0.5)")}
+                onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(233,198,154,0.2)")}
+              />
+              <div>
+                <input
+                  value={waParc}
+                  onChange={(e) => setWaParc(e.target.value)}
+                  placeholder="WhatsApp com DDD (opcional)"
+                  type="tel"
+                  style={campoBase}
+                  onFocus={(e) => (e.currentTarget.style.borderColor = "rgba(233,198,154,0.5)")}
+                  onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(233,198,154,0.2)")}
+                />
+                <p style={{ fontSize: 12, color: fraco, marginTop: 6, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic" }}>
+                  Usado para enviarmos o convite depois.
+                </p>
+              </div>
+            </motion.div>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 1.2 }}>
+              <Botao onClick={salvarParceiro} disabled={salvandoParc}>
+                {salvandoParc ? "Salvando…" : "Continuar"}
+              </Botao>
+            </motion.div>
+          </motion.div>
+        )}
 
         {/* ── ABERTURA ── */}
         {etapa === "abertura" && (

@@ -32,10 +32,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ erro: "Dados inválidos." }, { status: 400 });
   }
 
-  const nome_1 = (body.nome_1 || "").trim();
-  const nome_2 = (body.nome_2 || "").trim();
-  if (!nome_1 || !nome_2) {
-    return NextResponse.json({ erro: "Preencha os dois nomes do casal." }, { status: 400 });
+  const nome_1 = (body.nome_1 || "").trim().toUpperCase();
+  const nome_2 = (body.nome_2 || "").trim().toUpperCase();
+  if (!nome_1) {
+    return NextResponse.json({ erro: "Preencha pelo menos o nome da primeira pessoa." }, { status: 400 });
   }
 
   const sb = supabaseAdmin();

@@ -193,7 +193,7 @@ function CardCasal({ resumo, onAbrir }: { resumo: CasalResumo; onAbrir: () => vo
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
         <div>
           <div style={{ fontSize: 18, fontWeight: 600, color: cor.texto }}>
-            {casal.nome_1} <span style={{ color: cor.ouroForte }}>&amp;</span> {casal.nome_2}
+            {casal.nome_1} <span style={{ color: cor.ouroForte }}>&amp;</span> {casal.nome_2 || <span style={{ color: cor.fraco, fontStyle: "italic", fontWeight: 400 }}>a definir</span>}
           </div>
           <div style={{ fontSize: 13, color: cor.fraco, marginTop: 2 }}>Mesa {casal.mesa || "—"}</div>
         </div>
@@ -220,8 +220,8 @@ function FormNovoCasal({ onCriado, onErro }: { onCriado: (c: Casal) => void; onE
   const set = (k: keyof typeof f) => (v: string) => setF((s) => ({ ...s, [k]: v }));
 
   async function salvar() {
-    if (!f.nome_1.trim() || !f.nome_2.trim()) {
-      onErro("Preencha os dois nomes do casal.");
+    if (!f.nome_1.trim()) {
+      onErro("Preencha pelo menos o nome da primeira pessoa.");
       return;
     }
     setCarregando(true);
@@ -238,8 +238,8 @@ function FormNovoCasal({ onCriado, onErro }: { onCriado: (c: Casal) => void; onE
     <div>
       <Campo label="Nome 1" valor={f.nome_1} onChange={set("nome_1")} placeholder="ex.: Ana" />
       <Campo label="WhatsApp 1 (com DDD)" valor={f.whatsapp_1} onChange={set("whatsapp_1")} placeholder="ex.: 11999998888" tipo="tel" />
-      <Campo label="Nome 2" valor={f.nome_2} onChange={set("nome_2")} placeholder="ex.: Silvio" />
-      <Campo label="WhatsApp 2 (com DDD)" valor={f.whatsapp_2} onChange={set("whatsapp_2")} placeholder="ex.: 11988887777" tipo="tel" />
+      <Campo label="Nome 2 (opcional — a pessoa pode informar depois)" valor={f.nome_2} onChange={set("nome_2")} placeholder="ex.: Silvio" />
+      <Campo label="WhatsApp 2 (opcional)" valor={f.whatsapp_2} onChange={set("whatsapp_2")} placeholder="ex.: 11988887777" tipo="tel" />
       <Campo label="Mesa" valor={f.mesa} onChange={set("mesa")} placeholder="ex.: 12" />
       <div style={{ marginTop: 8 }}>
         <BotaoOuro cheio onClick={salvar} disabled={carregando}>

@@ -80,11 +80,15 @@ function LinhaLink({
   );
 }
 
+const MSG_WA = (nome: string) =>
+  `Olá, ${nome}! 🌹 O Araçá Grill está preparando uma experiência especial para casais no Dia dos Namorados — 12 de junho. É gratuita, rápida e totalmente guiada. Criamos algo emocionante para vocês dois viverem juntos nessa noite. Toque no link para fazer a sua parte:`;
+
 export default function LinksCasal({ casal }: { casal: Casal }) {
   const base = origem();
   const link1 = `${base}/cadastro/${casal.id}/1`;
   const link2 = `${base}/cadastro/${casal.id}/2`;
   const linkExp = `${base}/experiencia/${casal.token}`;
+  const nomeP2 = casal.nome_2?.trim() || "parceiro/a";
 
   return (
     <div>
@@ -92,13 +96,13 @@ export default function LinksCasal({ casal }: { casal: Casal }) {
         rotulo={`Cadastro de ${casal.nome_1}`}
         url={link1}
         whatsapp={casal.whatsapp_1}
-        mensagemWa={`${casal.nome_1}, o Araçá Grill preparou algo especial para vocês. Toque aqui pra começar a sua parte:`}
+        mensagemWa={MSG_WA(casal.nome_1)}
       />
       <LinhaLink
-        rotulo={`Cadastro de ${casal.nome_2}`}
+        rotulo={`Cadastro de ${nomeP2}`}
         url={link2}
         whatsapp={casal.whatsapp_2}
-        mensagemWa={`${casal.nome_2}, o Araçá Grill preparou algo especial para vocês. Toque aqui pra começar a sua parte:`}
+        mensagemWa={MSG_WA(nomeP2)}
       />
       <LinhaLink rotulo="Experiência (link secreto — QR)" url={linkExp} />
     </div>
