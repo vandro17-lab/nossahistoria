@@ -6,6 +6,93 @@ import { Volume2, VolumeX, Play, Pause, ChevronRight } from "lucide-react";
 import type { ExperienciaView, BlocoView, FotoView } from "@/lib/types";
 import TelaCarregamento from "./TelaCarregamento";
 
+// ============================================================
+//  DOWNLOAD — tipos e gerador de HTML offline
+// ============================================================
+
+type DownloadEstado = "idle" | "baixando" | "pronto" | "erro";
+
+function gerarHtmlExperiencia(
+  data: ExperienciaView,
+  b1fotos: { mensagem: string; b64: string }[],
+  b2fotos: { mensagem: string; b64: string }[],
+  audio1: string | null,
+  audio2: string | null
+): string {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+
+  const blocos = [
+    { nome: data.bloco_1.nome, musica: data.bloco_1.musica_titulo, msg: data.bloco_1.mensagem_final, fotos: b1fotos, audio: audio1 },
+    { nome: data.bloco_2.nome, musica: data.bloco_2.musica_titulo, msg: data.bloco_2.mensagem_final, fotos: b2fotos, audio: audio2 },
+  ];
+
+  const secoes = blocos
+    .map(
+      (bl) => `<section class="bloco">
+  <div class="bloco-header">
+    <span class="nome">${esc(bl.nome)}</span>
+    ${bl.musica ? `<span class="musica">&#9834; ${esc(bl.musica)}</span>` : ""}
+  </div>
+  ${bl.msg ? `<blockquote class="mensagem">&ldquo;${esc(bl.msg)}&rdquo;</blockquote>` : ""}
+  ${bl.audio ? `<div class="audio-bloco"><p class="audio-label">${esc(bl.nome)} tem algo pra te dizer</p><audio controls src="${bl.audio}"></audio></div>` : ""}
+  <div class="fotos-grid">${bl.fotos
+    .filter((f) => f.b64)
+    .map(
+      (f) =>
+        `<figure class="foto"><img src="${f.b64}" alt="" loading="lazy" />${f.mensagem ? `<figcaption>${esc(f.mensagem)}</figcaption>` : ""}</figure>`
+    )
+    .join("")}</div>
+</section>`
+    )
+    .join('\n<div class="divisor"></div>\n');
+
+  return `<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Nossa Historia &mdash; ${esc(data.nome_1)} &amp; ${esc(data.nome_2)}</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#080503;color:#f0e3d2;font-family:Georgia,"Times New Roman",serif;padding:0 0 80px}
+    .header{text-align:center;padding:80px 24px 48px;border-bottom:1px solid rgba(233,198,154,.1)}
+    .header .selo{letter-spacing:.32em;text-transform:uppercase;font-size:11px;color:#5a4430;margin-bottom:20px}
+    .header h1{font-size:clamp(30px,7vw,64px);color:#e9c69a;font-weight:400;font-style:italic;line-height:1.15}
+    .header .amp{color:#c8924f;margin:0 10px}
+    .bloco{max-width:680px;margin:56px auto 0;padding:0 24px}
+    .bloco-header{text-align:center;margin-bottom:28px}
+    .bloco-header .nome{display:block;font-size:clamp(24px,4.5vw,34px);color:#e9c69a;font-style:italic;margin-bottom:8px}
+    .bloco-header .musica{font-size:13px;color:#5a4430;letter-spacing:.05em}
+    blockquote.mensagem{font-size:clamp(17px,3.5vw,22px);font-style:italic;color:#cdb89e;line-height:1.65;text-align:center;border:none;margin:0 0 28px;padding:0 12px}
+    .audio-bloco{text-align:center;margin-bottom:28px}
+    .audio-label{font-style:italic;font-size:14px;color:#7a6448;margin-bottom:10px}
+    audio{width:100%;max-width:320px}
+    .fotos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px}
+    figure.foto{margin:0}
+    figure.foto img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
+    figcaption{font-style:italic;font-size:12px;color:#7a6448;margin-top:6px;line-height:1.5;padding:0 4px}
+    .divisor{width:48px;height:1px;background:rgba(200,146,79,.3);margin:56px auto}
+    .footer{text-align:center;padding:48px 24px}
+    .footer p{font-style:italic;font-size:15px;color:#5a4430;line-height:1.7}
+    .footer .seal{margin-top:28px;letter-spacing:.36em;text-transform:uppercase;font-size:12px;color:#c8924f;font-style:normal}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <p class="selo">Araca Grill</p>
+    <h1>${esc(data.nome_1)} <span class="amp">&amp;</span> ${esc(data.nome_2)}</h1>
+  </header>
+  ${secoes}
+  <div class="divisor"></div>
+  <footer class="footer">
+    <p>Algumas historias nao precisam ser perfeitas.<br />Elas so precisam ser verdadeiras.</p>
+    <p class="seal">Araca Grill</p>
+  </footer>
+</body>
+</html>`;
+}
+
 // ---- preloading ----
 function preloadUrls(urls: (string | null | undefined)[], onProgress: (p: number) => void) {
   const validos = urls.filter(Boolean) as string[];
@@ -740,9 +827,204 @@ function CenaBloco({
   );
 }
 
-function CenaFinal({ data }: { data: ExperienciaView }) {
-  const todas = [...data.bloco_1.fotos, ...data.bloco_2.fotos];
+function DownloadButton({ label, estado, onClick }: { label: string; estado: DownloadEstado; onClick: () => void }) {
+  const busy = estado === "baixando";
+  const done = estado === "pronto";
   return (
+    <motion.button
+      onClick={busy || done ? undefined : onClick}
+      whileHover={busy || done ? {} : { scale: 1.04 }}
+      whileTap={busy || done ? {} : { scale: 0.96 }}
+      transition={{ type: "spring", stiffness: 380, damping: 26 }}
+      style={{
+        padding: "10px 24px", borderRadius: 999,
+        border: `1px solid ${done ? "rgba(123,191,138,0.45)" : "rgba(233,198,154,0.3)"}`,
+        background: done ? "rgba(123,191,138,0.08)" : "transparent",
+        color: done ? "#7bbf8a" : estado === "erro" ? "#e07a6a" : "#e9c69a",
+        fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", fontSize: 16,
+        cursor: busy || done ? "default" : "pointer",
+        display: "inline-flex", alignItems: "center", gap: 6,
+      }}
+    >
+      {busy ? "Preparando…" : done ? "✓ Salvo" : estado === "erro" ? "Tentar de novo" : label}
+    </motion.button>
+  );
+}
+
+function ModalDownload({
+  data, onFechar, onBaixarZip, onBaixarHtml, estadoZip, estadoHtml,
+}: {
+  data: ExperienciaView; onFechar: () => void;
+  onBaixarZip: () => void; onBaixarHtml: () => void;
+  estadoZip: DownloadEstado; estadoHtml: DownloadEstado;
+}) {
+  const fotosN = data.bloco_1.fotos.length + data.bloco_2.fotos.length;
+  const audiosN = [data.bloco_1.audio_src, data.bloco_2.audio_src].filter(Boolean).length;
+  const mbEstimado = Math.round(fotosN * 1.5 + audiosN * 2);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+      transition={{ duration: 0.3 }}
+      onClick={(e) => { if (e.target === e.currentTarget) onFechar(); }}
+      style={{
+        position: "fixed", inset: 0, zIndex: 300,
+        background: "rgba(4,2,1,0.9)", backdropFilter: "blur(20px)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        padding: "24px 20px",
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 24, scale: 0.95 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, y: 12, scale: 0.97 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          background: "rgba(14,8,2,0.98)",
+          border: "1px solid rgba(233,198,154,0.15)",
+          borderRadius: 24, padding: "36px 28px",
+          maxWidth: 480, width: "100%",
+          maxHeight: "90dvh", overflowY: "auto",
+          position: "relative",
+        }}
+      >
+        <button onClick={onFechar} style={{
+          position: "absolute", top: 16, right: 20,
+          background: "none", border: "none", color: "#4a3828",
+          fontSize: 24, cursor: "pointer", lineHeight: 1,
+        }}>×</button>
+
+        <p style={{ fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", fontSize: 26, color: "#e9c69a", marginBottom: 6, textAlign: "center" }}>
+          Guardar esta história
+        </p>
+        <p style={{ textAlign: "center", color: "#5a4430", fontSize: 13, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", marginBottom: 28 }}>
+          {fotosN} foto{fotosN !== 1 ? "s" : ""} · {audiosN} áudio{audiosN !== 1 ? "s" : ""} · ~{mbEstimado} MB
+        </p>
+
+        <div style={{ height: 1, background: "rgba(233,198,154,0.1)", marginBottom: 22 }} />
+
+        {/* ZIP */}
+        <div style={{ border: "1px solid rgba(233,198,154,0.12)", borderRadius: 16, padding: "20px 22px", marginBottom: 14, background: "rgba(255,255,255,0.015)" }}>
+          <p style={{ fontFamily: "var(--font-cormorant),serif", fontSize: 19, color: "#e9c69a", margin: "0 0 8px" }}>
+            Só os arquivos (ZIP)
+          </p>
+          <p style={{ fontSize: 14, color: "#7a6448", lineHeight: 1.65, margin: "0 0 16px", fontFamily: "var(--font-cormorant),serif", fontStyle: "italic" }}>
+            Todas as fotos e mensagens de voz num único arquivo compactado.
+            Abre em qualquer celular ou computador, sem precisar de internet.
+          </p>
+          <DownloadButton label="Baixar ZIP" estado={estadoZip} onClick={onBaixarZip} />
+        </div>
+
+        {/* HTML */}
+        <div style={{ border: "1px solid rgba(233,198,154,0.12)", borderRadius: 16, padding: "20px 22px", marginBottom: 28, background: "rgba(255,255,255,0.015)" }}>
+          <p style={{ fontFamily: "var(--font-cormorant),serif", fontSize: 19, color: "#e9c69a", margin: "0 0 8px" }}>
+            A experiência completa (HTML)
+          </p>
+          <p style={{ fontSize: 14, color: "#7a6448", lineHeight: 1.65, margin: "0 0 8px", fontFamily: "var(--font-cormorant),serif", fontStyle: "italic" }}>
+            Um único arquivo que abre no navegador com todas as fotos, textos e áudios embutidos —
+            sem precisar de internet. Funciona para sempre, guardado num lugar seguro.
+          </p>
+          <p style={{ fontSize: 12.5, color: "#3d2c1e", lineHeight: 1.6, margin: "0 0 16px", fontFamily: "var(--font-cormorant),serif", fontStyle: "italic" }}>
+            As animações não estarão presentes nesta versão — uma limitação do formato HTML.
+            Já estamos desenvolvendo algo ainda mais bonito para a próxima vez.
+            Mas tudo o que importa já está aqui, guardado com cuidado.
+          </p>
+          <DownloadButton label="Baixar HTML" estado={estadoHtml} onClick={onBaixarHtml} />
+        </div>
+
+        <div style={{ height: 1, background: "rgba(233,198,154,0.07)", marginBottom: 20 }} />
+
+        <p style={{ fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", fontSize: 14, color: "#3d2c1e", textAlign: "center", lineHeight: 1.75 }}>
+          Memórias merecem um lugar seguro.<br />
+          Guarde onde só vocês tenham acesso.
+        </p>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+function CenaFinal({ data, onReiniciar }: { data: ExperienciaView; onReiniciar: () => void }) {
+  const todas = [...data.bloco_1.fotos, ...data.bloco_2.fotos];
+  const [showDownload, setShowDownload] = useState(false);
+  const [estadoZip, setEstadoZip] = useState<DownloadEstado>("idle");
+  const [estadoHtml, setEstadoHtml] = useState<DownloadEstado>("idle");
+
+  async function baixarZip() {
+    setEstadoZip("baixando");
+    try {
+      const { default: JSZip } = await import("jszip");
+      const zip = new JSZip();
+      const todasFotos = [...data.bloco_1.fotos, ...data.bloco_2.fotos];
+      for (let i = 0; i < todasFotos.length; i++) {
+        const f = todasFotos[i];
+        if (!f.src) continue;
+        const blob = await fetch(f.src).then((r) => r.blob());
+        const ext = blob.type.includes("png") ? "png" : "jpg";
+        zip.file(`fotos/foto_${String(i + 1).padStart(2, "0")}.${ext}`, blob);
+      }
+      for (const { src, nome } of [
+        { src: data.bloco_1.audio_src, nome: data.bloco_1.nome },
+        { src: data.bloco_2.audio_src, nome: data.bloco_2.nome },
+      ]) {
+        if (!src) continue;
+        const blob = await fetch(src).then((r) => r.blob());
+        zip.file(`audios/voz_${nome}.webm`, blob);
+      }
+      const content = await zip.generateAsync({ type: "blob" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(content);
+      a.download = "nossa-historia.zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      setEstadoZip("pronto");
+    } catch {
+      setEstadoZip("erro");
+    }
+  }
+
+  async function baixarHtml() {
+    setEstadoHtml("baixando");
+    try {
+      const toBase64 = (url: string) =>
+        fetch(url)
+          .then((r) => r.blob())
+          .then(
+            (blob) =>
+              new Promise<string>((res) => {
+                const rd = new FileReader();
+                rd.onload = () => res(rd.result as string);
+                rd.readAsDataURL(blob);
+              })
+          );
+
+      const b1fotos = await Promise.all(
+        data.bloco_1.fotos.map(async (f) => ({ mensagem: f.mensagem ?? "", b64: f.src ? await toBase64(f.src) : "" }))
+      );
+      const b2fotos = await Promise.all(
+        data.bloco_2.fotos.map(async (f) => ({ mensagem: f.mensagem ?? "", b64: f.src ? await toBase64(f.src) : "" }))
+      );
+      const audio1 = data.bloco_1.audio_src ? await toBase64(data.bloco_1.audio_src) : null;
+      const audio2 = data.bloco_2.audio_src ? await toBase64(data.bloco_2.audio_src) : null;
+
+      const html = gerarHtmlExperiencia(data, b1fotos, b2fotos, audio1, audio2);
+      const blob = new Blob([html], { type: "text/html; charset=utf-8" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "nossa-historia.html";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+      setEstadoHtml("pronto");
+    } catch {
+      setEstadoHtml("erro");
+    }
+  }
+
+  return (
+    <>
     <div
       style={{
         minHeight: "100dvh",
@@ -851,8 +1133,52 @@ function CenaFinal({ data }: { data: ExperienciaView }) {
         >
           Araçá Grill
         </motion.p>
+
+        {/* Botões finais */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 1, delay: todas.length * 0.15 + 5 }}
+          style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14, marginTop: 44 }}
+        >
+          <Botao onClick={onReiniciar}>
+            Ver novamente desde o início
+          </Botao>
+          <motion.button
+            onClick={() => setShowDownload(true)}
+            whileHover={{ scale: 1.04, y: -2 }}
+            whileTap={{ scale: 0.97 }}
+            transition={{ type: "spring", stiffness: 380, damping: 28 }}
+            style={{
+              padding: "11px 32px",
+              fontFamily: "var(--font-cormorant),serif",
+              fontSize: 16, fontStyle: "italic", letterSpacing: "0.05em",
+              color: "#9c8266",
+              background: "transparent",
+              border: "1px solid rgba(233,198,154,0.18)",
+              borderRadius: 999, cursor: "pointer",
+              marginTop: 0,
+            }}
+          >
+            Guardar esta história
+          </motion.button>
+        </motion.div>
       </motion.div>
     </div>
+
+    <AnimatePresence>
+      {showDownload && (
+        <ModalDownload
+          data={data}
+          onFechar={() => setShowDownload(false)}
+          onBaixarZip={baixarZip}
+          onBaixarHtml={baixarHtml}
+          estadoZip={estadoZip}
+          estadoHtml={estadoHtml}
+        />
+      )}
+    </AnimatePresence>
+    </>
   );
 }
 
@@ -990,6 +1316,13 @@ export default function Experiencia({ data }: { data: ExperienciaView }) {
 
   useEffect(() => () => limparFade(), []);
 
+  const reiniciar = useCallback(() => {
+    pararMusica();
+    if (vozRef.current) { vozRef.current.pause(); vozRef.current.currentTime = 0; }
+    setVozTocando(false);
+    setCena("entrada");
+  }, [pararMusica]);
+
   const vars = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 1.1, ease: "easeInOut" as const } };
 
   return (
@@ -1041,7 +1374,7 @@ export default function Experiencia({ data }: { data: ExperienciaView }) {
           )}
           {cena === "final" && (
             <motion.div key="final" {...vars}>
-              <CenaFinal data={data} />
+              <CenaFinal data={data} onReiniciar={reiniciar} />
             </motion.div>
           )}
         </AnimatePresence>
