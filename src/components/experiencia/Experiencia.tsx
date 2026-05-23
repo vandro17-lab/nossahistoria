@@ -904,7 +904,9 @@ function CenaBloco({
     return (
       <Centro>
         <TextoCarta
-          linhas={[`${bloco.nome} pensou em você.`, "Escolheu cada foto,", "cada palavra, cada silêncio.", "", "Tudo. Só pra você."]}
+          linhas={primeiro
+            ? [`${bloco.nome} pensou em você.`, "Escolheu cada foto, cada palavra.", "", "Tudo. Só pra você."]
+            : [`E agora foi a vez de ${bloco.nome}.`, "Cada escolha feita com cuidado.", "", "Com o mesmo amor."]}
           onDone={() => {
             setFotoIdx(0);
             setEtapa(fotos.length > 0 ? "fotos" : "audio");
