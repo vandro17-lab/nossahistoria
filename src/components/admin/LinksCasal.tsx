@@ -81,7 +81,7 @@ function LinhaLink({
 }
 
 const MSG_WA = (nome: string) =>
-  `Olá, ${nome}! 🌹 O Araçá Grill está preparando uma experiência especial para casais no Dia dos Namorados — 12 de junho. É gratuita, rápida e totalmente guiada. Criamos algo emocionante para vocês dois viverem juntos nessa noite. Toque no link para fazer a sua parte:`;
+  `Olá, ${nome}! 🌹 O Araçá Grill está preparando uma surpresa personalizada para o Dia dos Namorados e precisa da sua ajuda. São só alguns minutinhos — perguntas simples, tudo guiado passo a passo. O que você compartilhar vai aparecer como um presente especial para quem você ama no jantar do dia 12. Quem estará com você não vai saber o que você respondeu 😉 Toque no link para fazer a sua parte:`;
 
 export default function LinksCasal({ casal }: { casal: Casal }) {
   const base = origem();

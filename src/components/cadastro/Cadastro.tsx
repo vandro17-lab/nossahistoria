@@ -214,6 +214,8 @@ export default function Cadastro(props: {
   );
   const [nomeParc, setNomeParc] = useState("");
   const [waParc, setWaParc] = useState("");
+  // Usa o nome do parceiro já salvo (prop) ou o que a pessoa acabou de digitar na etapa "parceiro"
+  const nomeDoParc = nomeParceiro.trim() || nomeParc.trim() || "você";
   const [salvandoParc, setSalvandoParc] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
   const [musTitulo, setMusTitulo] = useState(props.musicaTitulo);
@@ -413,7 +415,7 @@ export default function Cadastro(props: {
               </>
             ) : (
               <>
-                <Titulo delay={0.3}><strong style={{ color: ouro, fontStyle: "normal" }}>{nomeParceiro}</strong> já esteve aqui.</Titulo>
+                <Titulo delay={0.3}><strong style={{ color: ouro, fontStyle: "normal" }}>{nomeDoParc}</strong> já esteve aqui.</Titulo>
                 <Titulo delay={0.55}>Deixou algo lindo pra você — mas isso é surpresa.</Titulo>
                 <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 0.9 }}
                   style={{ color: areia, fontSize: 18, marginTop: 10, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic" }}>
@@ -436,7 +438,7 @@ export default function Cadastro(props: {
             </motion.div>
             <Titulo delay={0.15}>
               Tem uma música que, quando toca, você pensa em{" "}
-              <strong style={{ color: ouro, fontStyle: "normal" }}>{nomeParceiro}</strong>{" "}
+              <strong style={{ color: ouro, fontStyle: "normal" }}>{nomeDoParc}</strong>{" "}
               antes de qualquer coisa. Qual é ela?
             </Titulo>
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.35 }}
@@ -556,7 +558,7 @@ export default function Cadastro(props: {
           <motion.div key="audio" variants={paginaVariants} initial="initial" animate="animate" exit="exit">
             <Titulo delay={0}>
               Agora fale com{" "}
-              <strong style={{ color: ouro, fontStyle: "normal" }}>{nomeParceiro}</strong>.
+              <strong style={{ color: ouro, fontStyle: "normal" }}>{nomeDoParc}</strong>.
             </Titulo>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.6, delay: 0.35 }}
               style={{ color: fraco, fontSize: 15, marginBottom: 28, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic", lineHeight: 1.6 }}>
@@ -633,7 +635,7 @@ export default function Cadastro(props: {
             />
             <Titulo delay={0.3}>Você fez algo muito bonito hoje.</Titulo>
             <Titulo delay={0.6}>
-              <strong style={{ color: ouro, fontStyle: "normal" }}>{nomeParceiro}</strong> não tem a menor ideia do que está por vir.
+              <strong style={{ color: ouro, fontStyle: "normal" }}>{nomeDoParc}</strong> não tem a menor ideia do que está por vir.
             </Titulo>
             <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.9, delay: 1 }}
               style={{ color: areia, fontSize: 18, marginTop: 14, fontFamily: "var(--font-cormorant),serif", fontStyle: "italic" }}>
